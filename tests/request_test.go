@@ -7,8 +7,7 @@ import (
 
 func TestGetRequest(t *testing.T) {
 	u := "https://www.baidu.com"
-	h := request.RequestHeaderDto{UserAgent: request.HTTP_USER_AGENT}
-	data, err := request.WebGet(u, h, nil)
+	data, err := request.WebGet(u, nil, nil)
 	if err != nil || data.HttpCode != request.HTTP_CODE_OK {
 		t.Fatal("test get request fail", data, err)
 	} else {
@@ -18,8 +17,7 @@ func TestGetRequest(t *testing.T) {
 
 func TestPostRequest(t *testing.T) {
 	u := "https://www.baidu.com"
-	h := request.RequestHeaderDto{UserAgent: request.HTTP_USER_AGENT}
-	data, err := request.WebPost(u, nil, h, nil)
+	data, err := request.WebPost(u, nil, nil, nil)
 	if err != nil || data.HttpCode != request.HTTP_CODE_OK {
 		t.Fatal("test post request fail", data, err)
 	} else {

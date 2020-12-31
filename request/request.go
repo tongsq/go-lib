@@ -15,9 +15,9 @@ import (
 /**
 get request use proxy
 */
-func WebGetProxy(requestUrl string, header RequestHeaderDto, host string, port string) (*HttpResultDto, error) {
+func WebGetProxy(requestUrl string, header *RequestHeaderDto, host string, port string) (*HttpResultDto, error) {
 	req, _ := http.NewRequest("GET", requestUrl, nil)
-	req = addHeader(req, &header)
+	req = addHeader(req, header)
 	proxyServer := fmt.Sprintf("http://%s:%s", host, port)
 	proxyUrl, _ := url.Parse(proxyServer)
 	client := &http.Client{
@@ -30,9 +30,12 @@ func WebGetProxy(requestUrl string, header RequestHeaderDto, host string, port s
 /**
 get with headers and cookies
 */
-func WebGet(requestUrl string, header RequestHeaderDto, cookie map[string]string) (*HttpResultDto, error) {
+func WebGet(requestUrl string, header *RequestHeaderDto, cookie map[string]string) (*HttpResultDto, error) {
+	if header == nil {
+		header = &RequestHeaderDto{UserAgent: HTTP_USER_AGENT}
+	}
 	req, _ := http.NewRequest("GET", requestUrl, nil)
-	req = addHeader(req, &header)
+	req = addHeader(req, header)
 	req = addCookie(req, cookie)
 	client := &http.Client{
 		Timeout: time.Second * 5,
@@ -43,10 +46,12 @@ func WebGet(requestUrl string, header RequestHeaderDto, cookie map[string]string
 /**
 post with cookies and headers
 */
-func WebPost(requestUrl string, data map[string]string, header RequestHeaderDto, cookie map[string]string) (*HttpResultDto, error) {
-
+func WebPost(requestUrl string, data map[string]string, header *RequestHeaderDto, cookie map[string]string) (*HttpResultDto, error) {
+	if header == nil {
+		header = &RequestHeaderDto{UserAgent: HTTP_USER_AGENT}
+	}
 	req, _ := http.NewRequest("POST", requestUrl, strings.NewReader(GetReqData(data)))
-	req = addHeader(req, &header)
+	req = addHeader(req, header)
 	req = addCookie(req, cookie)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	client := &http.Client{
@@ -59,7 +64,7 @@ func WebPost(requestUrl string, data map[string]string, header RequestHeaderDto,
 post without header cookie
 */
 func ApiPost(requestUrl string, data map[string]string) (*HttpResultDto, error) {
-	return WebPost(requestUrl, data, RequestHeaderDto{}, map[string]string{})
+	return WebPost(requestUrl, data, &RequestHeaderDto{}, map[string]string{})
 }
 
 /**

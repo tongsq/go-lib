@@ -69,3 +69,21 @@ func Add(args ...int) (sum int) {
 	}
 	return
 }
+
+func Max(args ...int) (m int) {
+	for i, v := range args {
+		if i == 0 || v > m {
+			m = v
+		}
+	}
+	return
+}
+
+func Min(args ...int) (m int) {
+	for i, v := range args {
+		if i == 0 || v < m {
+			m = v
+		}
+	}
+	return
+}

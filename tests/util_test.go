@@ -12,3 +12,19 @@ func TestAdd(t *testing.T) {
 		t.Fatal("test add fail")
 	}
 }
+
+func TestMax(t *testing.T) {
+	if util.Max(1, 3, 2) == 3 {
+		t.Log("test Max success")
+	} else {
+		t.Fatal("test Max fail")
+	}
+}
+
+func TestMin(t *testing.T) {
+	if util.Min(1, 3, 2) == 1 {
+		t.Log("test Min success")
+	} else {
+		t.Fatal("test Min fail")
+	}
+}
