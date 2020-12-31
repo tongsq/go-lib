@@ -104,10 +104,6 @@ func request(client *http.Client, req *http.Request) (*HttpResultDto, error) {
 		return result, err
 	}
 	saveResponse(result, resp)
-	if resp.StatusCode != 200 {
-		resp.Body.Close()
-		return result, ecode.HTTP_CODE_ERROR
-	}
 	defer resp.Body.Close()
 	data := resp.Body
 	if resp.Header.Get("Content-Encoding") == "gzip" {
@@ -122,6 +118,9 @@ func request(client *http.Client, req *http.Request) (*HttpResultDto, error) {
 		return result, ecode.HTTP_READ_ERROR
 	}
 	result.Body = string(body)
+	if resp.StatusCode != HTTP_CODE_OK {
+		return result, ecode.HTTP_CODE_ERROR
+	}
 	return result, nil
 }
 
