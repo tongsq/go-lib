@@ -1,7 +1,6 @@
 package util
 
 import (
-	"github.com/tongsq/go-lib/logger"
 	"math/big"
 	"strconv"
 )
@@ -26,13 +25,12 @@ func Int2str(i int) string {
 	return strconv.Itoa(i)
 }
 
-func Str2Int(s string) int {
+func Str2Int(s string) (int, error) {
 	i, err := strconv.Atoi(s)
 	if err != nil {
-		logger.Error("parse string to int fail", err)
-		return 0
+		return 0, err
 	}
-	return i
+	return i, nil
 }
 
 func Int64toStr(i int64) string {

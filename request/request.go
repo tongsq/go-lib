@@ -4,7 +4,6 @@ import (
 	"compress/gzip"
 	"fmt"
 	"github.com/tongsq/go-lib/ecode"
-	"github.com/tongsq/go-lib/logger"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -102,13 +101,11 @@ func request(client *http.Client, req *http.Request) (*HttpResultDto, error) {
 	result := NewHttpResultDto()
 	resp, err := client.Do(req)
 	if err != nil {
-		logger.Error("http get error", err)
 		return result, err
 	}
 	saveResponse(result, resp)
 	if resp.StatusCode != 200 {
 		resp.Body.Close()
-		logger.Error("http status error ", resp.StatusCode)
 		return result, ecode.HTTP_CODE_ERROR
 	}
 	defer resp.Body.Close()
@@ -116,14 +113,12 @@ func request(client *http.Client, req *http.Request) (*HttpResultDto, error) {
 	if resp.Header.Get("Content-Encoding") == "gzip" {
 		data, err = gzip.NewReader(resp.Body)
 		if err != nil {
-			logger.Error("read gzip response error", err)
 			return result, ecode.HTTP_GZIP_DECODE_ERROR
 		}
 		defer data.Close()
 	}
 	body, err := ioutil.ReadAll(data)
 	if err != nil {
-		logger.Error("read error", err)
 		return result, ecode.HTTP_READ_ERROR
 	}
 	result.Body = string(body)

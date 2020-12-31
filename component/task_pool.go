@@ -1,9 +1,5 @@
 package component
 
-import (
-	"github.com/tongsq/go-lib/logger"
-)
-
 type Pool struct {
 	worker    chan func()
 	size      chan bool
@@ -23,7 +19,6 @@ func (pool *Pool) workerStart(workerNum int, task func()) {
 		task()
 		task = <-pool.worker
 		if task == nil {
-			logger.Success("worker exit:", workerNum)
 			break
 		}
 	}
