@@ -2,42 +2,64 @@ package logger
 
 import (
 	"fmt"
-	"log"
+	"github.com/sirupsen/logrus"
 	"os"
 	"runtime"
 )
 
-var logger *log.Logger
+type Fields map[string]interface{}
 
-var errorLogger *log.Logger
+var log *logrus.Logger
+
+var f *logrus.TextFormatter
 
 func init() {
+	log = logrus.New()
+	f = &logrus.TextFormatter{
+		TimestampFormat:  "2006-01-02 15:04:05",
+		DisableTimestamp: false,
+		FullTimestamp:    true,
+		DisableColors:    false,
+	}
+	log.SetFormatter(f)
 	dir, _ := os.Getwd()
 	errFile, err := os.OpenFile(dir+"/errors.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalln("open log file failed：", err)
 	}
-	log.SetFlags(log.Ltime | log.Lshortfile)
-	//errorLogger = log.New(io.MultiWriter(os.Stderr, errFile), "Error:", log.Ldate|log.Ltime|log.Lshortfile)
-	errorLogger = log.New(errFile, "Error:", log.Ldate|log.Ltime)
-	logger = log.New(os.Stdout, "Info:", log.Ldate|log.Ltime)
+	hook := ErrorHook{Writer: errFile}
+	log.AddHook(&hook)
 }
 
-func Info(v ...interface{}) {
-	logger.Println(getLogContent("", v)...)
+func Info(msg string, fields map[string]interface{}) {
+	log.WithFields(fields).Print(getFileInfo() + getLogMsg(msg, "37"))
 }
 
-func Success(v ...interface{}) {
-	logger.Println(getLogContent("32", v)...)
+func FInfo(format string, args ...interface{}) {
+	log.Info(getFileInfo() + fmt.Sprintf(format, args...))
 }
 
-func Warning(v ...interface{}) {
-	logger.Println(getLogContent("33", v)...)
+func Success(msg string, fields map[string]interface{}) {
+	log.WithFields(fields).Print(getFileInfo() + getLogMsg(msg, "32"))
 }
 
-func Error(v ...interface{}) {
-	logger.Println(getLogContent("31", v)...)
-	errorLogger.Println(getLogContent("", v)...)
+func FSuccess(msg string, args ...interface{}) {
+	log.Print(getFileInfo() + getLogMsg(fmt.Sprintf(msg, args...), "32"))
+}
+
+func Warning(msg string, fields map[string]interface{}) {
+	log.WithFields(fields).Warning(getFileInfo() + getLogMsg(msg, "33"))
+}
+
+func FWarning(msg string, args ...interface{}) {
+	log.Print(getFileInfo() + getLogMsg(fmt.Sprintf(msg, args...), "33"))
+}
+
+func Error(msg string, fields map[string]interface{}) {
+	log.WithFields(fields).Error(getFileInfo() + getLogMsg(msg, "31"))
+}
+func FError(msg string, args ...interface{}) {
+	log.Print(getFileInfo() + getLogMsg(fmt.Sprintf(msg, args...), "31"))
 }
 
 type CronLogger struct {
@@ -45,12 +67,16 @@ type CronLogger struct {
 
 func (l *CronLogger) Info(msg string, keysAndValues ...interface{}) {
 	v := []interface{}{"cron info", msg, keysAndValues}
-	Info(v...)
+	log.Println(getLogContent("", v))
 }
 
 func (l *CronLogger) Error(err error, msg string, keysAndValues ...interface{}) {
 	v := []interface{}{"cron error", err, msg, keysAndValues}
-	Error(v...)
+	log.Println(getLogContent("31", v))
+}
+
+func getLogMsg(msg string, color string) string {
+	return "\x1b[0;" + color + "m" + msg + "\x1b[0m"
 }
 
 func getLogContent(color string, v []interface{}) []interface{} {
@@ -70,7 +96,7 @@ func getLogContent(color string, v []interface{}) []interface{} {
 }
 
 func getFileInfo() string {
-	_, file, line, ok := runtime.Caller(3)
+	_, file, line, ok := runtime.Caller(2)
 	if !ok {
 		file = "???"
 		line = 0
