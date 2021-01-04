@@ -52,14 +52,14 @@ func Warning(msg string, fields map[string]interface{}) {
 }
 
 func FWarning(msg string, args ...interface{}) {
-	log.Print(getFileInfo() + getLogMsg(fmt.Sprintf(msg, args...), "33"))
+	log.Warning(getFileInfo() + getLogMsg(fmt.Sprintf(msg, args...), "33"))
 }
 
 func Error(msg string, fields map[string]interface{}) {
 	log.WithFields(fields).Error(getFileInfo() + getLogMsg(msg, "31"))
 }
 func FError(msg string, args ...interface{}) {
-	log.Print(getFileInfo() + getLogMsg(fmt.Sprintf(msg, args...), "31"))
+	log.Error(getFileInfo() + getLogMsg(fmt.Sprintf(msg, args...), "31"))
 }
 
 type CronLogger struct {
