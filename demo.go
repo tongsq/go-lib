@@ -15,5 +15,6 @@ func main() {
 	logger.Warning("hello world", logger.Fields{"hello": "world", "key": "aaa"})
 	logger.Error("hello world", logger.Fields{"hello": "world", "key": "aaa"})
 	logger.Success("hello world", logger.Fields{"hello": "world", "key": "aaa"})
-	logger.FInfo("aa")
+	logger.FInfo("aa", "bb")
+	logger.FError("aa, %s", "bb")
 }
