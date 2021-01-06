@@ -7,22 +7,43 @@ import (
 )
 
 type RedisClient struct {
-	pool      *redis.Pool
-	MaxIdle   int
-	MaxActive int
-	Network   string
-	Address   string
+	pool         *redis.Pool
+	MaxIdle      int
+	MaxActive    int
+	Network      string
+	Address      string
+	Password     string
+	Db           int
+	Username     string
+	ReadTimeout  time.Duration
+	WriteTimeout time.Duration
 }
 
 func (c *RedisClient) GetPool() *redis.Pool {
 	if c.pool == nil {
+		var options []redis.DialOption
+		if c.Password != "" {
+			options = append(options, redis.DialPassword(c.Password))
+		}
+		if c.Db > 0 {
+			options = append(options, redis.DialDatabase(c.Db))
+		}
+		if c.Username != "" {
+			options = append(options, redis.DialUsername(c.Username))
+		}
+		if c.ReadTimeout > 0 {
+			options = append(options, redis.DialReadTimeout(c.ReadTimeout))
+		}
+		if c.WriteTimeout > 0 {
+			options = append(options, redis.DialWriteTimeout(c.WriteTimeout))
+		}
 		c.pool = &redis.Pool{
 			MaxIdle:     c.MaxIdle,
 			MaxActive:   c.MaxActive,
 			Wait:        true,
 			IdleTimeout: time.Second * 3,
 			Dial: func() (redis.Conn, error) {
-				r, err := redis.Dial(c.Network, c.Address)
+				r, err := redis.Dial(c.Network, c.Address, options...)
 				if err != nil {
 					return nil, err
 				}
