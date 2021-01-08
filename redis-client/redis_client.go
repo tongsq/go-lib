@@ -17,6 +17,7 @@ type RedisClient struct {
 	Username     string
 	ReadTimeout  time.Duration
 	WriteTimeout time.Duration
+	IdleTimeout  time.Duration
 }
 
 func (c *RedisClient) GetPool() *redis.Pool {
@@ -41,7 +42,7 @@ func (c *RedisClient) GetPool() *redis.Pool {
 			MaxIdle:     c.MaxIdle,
 			MaxActive:   c.MaxActive,
 			Wait:        true,
-			IdleTimeout: time.Second * 3,
+			IdleTimeout: c.IdleTimeout,
 			Dial: func() (redis.Conn, error) {
 				r, err := redis.Dial(c.Network, c.Address, options...)
 				if err != nil {
@@ -56,6 +57,7 @@ func (c *RedisClient) GetPool() *redis.Pool {
 
 func (c *RedisClient) Get(key string) (string, error) {
 	conn := c.GetPool().Get()
+
 	defer conn.Close()
 	res, err := conn.Do("GET", key)
 	if err != nil {
