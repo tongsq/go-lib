@@ -2,13 +2,15 @@ package request
 
 import (
 	"compress/gzip"
+	"encoding/json"
 	"fmt"
-	"github.com/tongsq/go-lib/ecode"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/tongsq/go-lib/ecode"
 )
 
 /**
@@ -49,10 +51,32 @@ func WebPost(requestUrl string, data map[string]string, header *RequestHeaderDto
 	if header == nil {
 		header = &RequestHeaderDto{UserAgent: HTTP_USER_AGENT}
 	}
+	if header.ContentType == "" {
+		header.ContentType = CONTENT_TYPE_FORM
+	}
 	req, _ := http.NewRequest("POST", requestUrl, strings.NewReader(GetReqData(data)))
 	req = addHeader(req, header)
 	req = addCookie(req, cookie)
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	client := &http.Client{
+		Timeout: time.Second * 5,
+	}
+	return request(client, req)
+}
+
+/**
+post with cookies and headers
+*/
+func WebPostJson(requestUrl string, data map[string]string, header *RequestHeaderDto, cookie map[string]string) (*HttpResultDto, error) {
+	if header == nil {
+		header = &RequestHeaderDto{UserAgent: HTTP_USER_AGENT}
+	}
+	if header.ContentType == "" {
+		header.ContentType = CONTENT_TYPE_JSON
+	}
+	jsonData, _ := json.Marshal(data)
+	req, _ := http.NewRequest("POST", requestUrl, strings.NewReader(string(jsonData)))
+	req = addHeader(req, header)
+	req = addCookie(req, cookie)
 	client := &http.Client{
 		Timeout: time.Second * 5,
 	}
@@ -130,6 +154,7 @@ add request header
 func addHeader(req *http.Request, h *RequestHeaderDto) *http.Request {
 	if h.Host != "" {
 		req.Header.Set("Host", h.Host)
+		req.Host = h.Host
 	}
 	if h.Accept != "" {
 		req.Header.Set("Accept", h.Accept)
@@ -157,6 +182,11 @@ func addHeader(req *http.Request, h *RequestHeaderDto) *http.Request {
 	}
 	if h.XRequestedWith != "" {
 		req.Header.Set("X-Requested-With", h.XRequestedWith)
+	}
+	if h.ContentType != "" {
+		req.Header.Set("Content-Type", h.ContentType)
+	} else {
+		req.Header.Set("Content-Type", CONTENT_TYPE_FORM)
 	}
 	return req
 }

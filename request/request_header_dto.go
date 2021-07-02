@@ -11,4 +11,5 @@ type RequestHeaderDto struct {
 	SecFetchDest            string
 	SecFetchMode            string
 	XRequestedWith          string
+	ContentType             string
 }
