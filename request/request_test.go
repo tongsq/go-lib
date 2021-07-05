@@ -22,3 +22,20 @@ func TestWebPostJson(t *testing.T) {
 		t.Log("test post request success", err)
 	}
 }
+
+func TestWebGet(t *testing.T) {
+	u := "https://httpbin.org/anything"
+	h := RequestHeaderDto{
+		//UserAgent:               consts.USER_AGENT,
+		UpgradeInsecureRequests: "1",
+		Host:                    "example.com",
+		ContentType:             CONTENT_TYPE_JSON,
+	}
+	data, err := WebGet(u, &h, map[string]string{"ck": "cookie demo"})
+	fmt.Printf("%#v\n", data)
+	if err != nil || data.HttpCode != HTTP_CODE_OK {
+		t.Fatal("test get request fail", err)
+	} else {
+		t.Log("test get request success:", data.Body)
+	}
+}
