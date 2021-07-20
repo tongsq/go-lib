@@ -39,3 +39,17 @@ func TestWebGet(t *testing.T) {
 		t.Log("test get request success:", data.Body)
 	}
 }
+
+func TestWebGetGbk(t *testing.T) {
+	u := "http://qt.gtimg.cn/q=sh601318,sh000107"
+	h := RequestHeaderDto{
+		UserAgent: HTTP_USER_AGENT,
+	}
+	data, err := WebGet(u, &h, nil)
+	fmt.Printf("%#v\n", data)
+	if err != nil || data.HttpCode != HTTP_CODE_OK {
+		t.Fatal("test get request fail", err)
+	} else {
+		t.Log("test get request success:", data.Body)
+	}
+}

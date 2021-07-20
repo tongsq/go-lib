@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/tongsq/go-lib/ecode"
+	"github.com/tongsq/go-lib/util"
 )
 
 /**
@@ -141,7 +142,20 @@ func request(client *http.Client, req *http.Request) (*HttpResultDto, error) {
 	if err != nil {
 		return result, ecode.HTTP_READ_ERROR
 	}
-	result.Body = string(body)
+	types, ok := result.Header["Content-Type"]
+	bodyStr := string(body)
+	if ok {
+		for _, t := range types {
+			if util.Contains(t, []string{"GBK", "gbk", "gb2312", "GB2312"}) {
+				b, err := util.GbkToUtf8(bodyStr)
+				if err == nil {
+					bodyStr = b
+				}
+				break
+			}
+		}
+	}
+	result.Body = bodyStr
 	if resp.StatusCode != HTTP_CODE_OK {
 		return result, ecode.HTTP_CODE_ERROR
 	}
