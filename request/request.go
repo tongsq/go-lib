@@ -2,94 +2,14 @@ package request
 
 import (
 	"compress/gzip"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"strings"
-	"time"
 
 	"github.com/tongsq/go-lib/ecode"
 	"github.com/tongsq/go-lib/util"
 )
-
-/**
-get request use proxy
-*/
-func WebGetProxy(requestUrl string, header *RequestHeaderDto, host string, port string) (*HttpResultDto, error) {
-	req, _ := http.NewRequest("GET", requestUrl, nil)
-	req = addHeader(req, header)
-	proxyServer := fmt.Sprintf("http://%s:%s", host, port)
-	proxyUrl, _ := url.Parse(proxyServer)
-	client := &http.Client{
-		Transport: &http.Transport{Proxy: http.ProxyURL(proxyUrl)},
-		Timeout:   time.Second * 5,
-	}
-	return request(client, req)
-}
-
-/**
-get with headers and cookies
-*/
-func WebGet(requestUrl string, header *RequestHeaderDto, cookie map[string]string) (*HttpResultDto, error) {
-	if header == nil {
-		header = &RequestHeaderDto{UserAgent: HTTP_USER_AGENT}
-	}
-	req, _ := http.NewRequest("GET", requestUrl, nil)
-	req = addHeader(req, header)
-	req = addCookie(req, cookie)
-	client := &http.Client{
-		Timeout: time.Second * 5,
-	}
-	return request(client, req)
-}
-
-/**
-post with cookies and headers
-*/
-func WebPost(requestUrl string, data map[string]string, header *RequestHeaderDto, cookie map[string]string) (*HttpResultDto, error) {
-	if header == nil {
-		header = &RequestHeaderDto{UserAgent: HTTP_USER_AGENT}
-	}
-	if header.ContentType == "" {
-		header.ContentType = CONTENT_TYPE_FORM
-	}
-	req, _ := http.NewRequest("POST", requestUrl, strings.NewReader(GetReqData(data)))
-	req = addHeader(req, header)
-	req = addCookie(req, cookie)
-	client := &http.Client{
-		Timeout: time.Second * 5,
-	}
-	return request(client, req)
-}
-
-/**
-post with cookies and headers
-*/
-func WebPostJson(requestUrl string, data map[string]string, header *RequestHeaderDto, cookie map[string]string) (*HttpResultDto, error) {
-	if header == nil {
-		header = &RequestHeaderDto{UserAgent: HTTP_USER_AGENT}
-	}
-	if header.ContentType == "" {
-		header.ContentType = CONTENT_TYPE_JSON
-	}
-	jsonData, _ := json.Marshal(data)
-	req, _ := http.NewRequest("POST", requestUrl, strings.NewReader(string(jsonData)))
-	req = addHeader(req, header)
-	req = addCookie(req, cookie)
-	client := &http.Client{
-		Timeout: time.Second * 5,
-	}
-	return request(client, req)
-}
-
-/**
-post without header cookie
-*/
-func ApiPost(requestUrl string, data map[string]string) (*HttpResultDto, error) {
-	return WebPost(requestUrl, data, &RequestHeaderDto{}, map[string]string{})
-}
 
 /**
 format query params
@@ -100,23 +20,6 @@ func GetReqData(d map[string]string) string {
 		s = s + fmt.Sprintf("%s=%s&", k, url.QueryEscape(v))
 	}
 	return s
-}
-
-func WebRequest(req *http.Request) (*HttpResultDto, error) {
-	client := &http.Client{
-		Timeout: time.Second * 10,
-	}
-	return request(client, req)
-}
-
-func WebRequestProxy(req *http.Request, host string, port string) (*HttpResultDto, error) {
-	proxyServer := fmt.Sprintf("http://%s:%s", host, port)
-	proxyUrl, _ := url.Parse(proxyServer)
-	client := &http.Client{
-		Transport: &http.Transport{Proxy: http.ProxyURL(proxyUrl)},
-		Timeout:   time.Second * 5,
-	}
-	return request(client, req)
 }
 
 /**
@@ -165,7 +68,10 @@ func request(client *http.Client, req *http.Request) (*HttpResultDto, error) {
 /**
 add request header
 */
-func addHeader(req *http.Request, h *RequestHeaderDto) *http.Request {
+func addHeader(req *http.Request, h *HeaderDto) *http.Request {
+	if h == nil {
+		return req
+	}
 	if h.Host != "" {
 		req.Header.Set("Host", h.Host)
 		req.Host = h.Host
@@ -202,6 +108,11 @@ func addHeader(req *http.Request, h *RequestHeaderDto) *http.Request {
 	} else {
 		req.Header.Set("Content-Type", CONTENT_TYPE_FORM)
 	}
+	if h.Other != nil {
+		for k, v := range h.Other {
+			req.Header.Set(k, v)
+		}
+	}
 	return req
 }
 
@@ -225,5 +136,17 @@ func saveResponse(data *HttpResultDto, resp *http.Response) {
 	data.Header = resp.Header
 	for _, c := range resp.Cookies() {
 		data.Cookies[c.Name] = c.Value
+	}
+}
+
+func getProxyUrl(p *ProxyDto) string {
+	proto := p.Proto
+	if proto == "" {
+		proto = PROTO_HTTP
+	}
+	if p.User == "" {
+		return fmt.Sprintf("%s://%s:%s", proto, p.Host, p.Port)
+	} else {
+		return fmt.Sprintf("%s://%s:%s@%s:%s", proto, p.User, p.Password, p.Host, p.Port)
 	}
 }

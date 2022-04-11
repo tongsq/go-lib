@@ -1,6 +1,6 @@
 package request
 
-type RequestHeaderDto struct {
+type HeaderDto struct {
 	Referer                 string
 	UserAgent               string
 	Host                    string
@@ -12,4 +12,5 @@ type RequestHeaderDto struct {
 	SecFetchMode            string
 	XRequestedWith          string
 	ContentType             string
+	Other                   map[string]string
 }

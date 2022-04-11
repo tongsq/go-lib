@@ -2,9 +2,12 @@ package logger
 
 import (
 	"encoding/json"
+	"io"
+	"regexp"
+	"strings"
+
 	"github.com/sirupsen/logrus"
 	"github.com/tongsq/go-lib/util"
-	"io"
 )
 
 type ErrorHook struct {
@@ -14,8 +17,13 @@ type ErrorHook struct {
 func (hook *ErrorHook) Fire(entry *logrus.Entry) error {
 
 	var data logrus.Fields = util.MapCopy(entry.Data)
-	data["Message"] = entry.Message
-	data["Time"] = entry.Time
+	msg := entry.Message
+	msg = strings.TrimRight(msg, "\u001B[0m")
+	msg = strings.TrimLeft(msg, "\u001b[0;")
+	reg := regexp.MustCompile(`^[0-9]+m`)
+	msg = reg.ReplaceAllString(msg, "")
+	data["message"] = msg
+	data["time"] = entry.Time
 	jsonStr, err := json.Marshal(data)
 	if err != nil {
 		return nil

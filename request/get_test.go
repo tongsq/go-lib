@@ -7,7 +7,7 @@ import (
 
 func TestWebPostJson(t *testing.T) {
 	u := "http://220.181.38.148"
-	h := RequestHeaderDto{
+	h := HeaderDto{
 		//UserAgent:               consts.USER_AGENT,
 		UpgradeInsecureRequests: "1",
 		Host:                    "baidu.com",
@@ -25,7 +25,7 @@ func TestWebPostJson(t *testing.T) {
 
 func TestWebGet(t *testing.T) {
 	u := "https://httpbin.org/anything"
-	h := RequestHeaderDto{
+	h := HeaderDto{
 		//UserAgent:               consts.USER_AGENT,
 		UpgradeInsecureRequests: "1",
 		Host:                    "example.com",
@@ -42,7 +42,7 @@ func TestWebGet(t *testing.T) {
 
 func TestWebGetGbk(t *testing.T) {
 	u := "http://qt.gtimg.cn/q=sh601318,sh000107"
-	h := RequestHeaderDto{
+	h := HeaderDto{
 		UserAgent: HTTP_USER_AGENT,
 	}
 	data, err := WebGet(u, &h, nil)

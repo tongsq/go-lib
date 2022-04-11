@@ -1,8 +1,9 @@
 package tests
 
 import (
-	"github.com/tongsq/go-lib/logger"
 	"testing"
+
+	"github.com/tongsq/go-lib/logger"
 )
 
 func TestLog(t *testing.T) {
@@ -15,4 +16,15 @@ func TestLog(t *testing.T) {
 	logger.Error("test logger Error", logger.Fields{"key": "test"})
 	logger.Success("test logger Success", logger.Fields{"key": "test"})
 	t.Log("TestAdd success")
+}
+
+func TestSetLevel(t *testing.T) {
+	logger.SetLogLevel(4)
+	logger.Info("this is info log", map[string]interface{}{})
+	logger.Warning("this is warn log", map[string]interface{}{})
+}
+
+func TestLogError(t *testing.T) {
+	logger.SetErrorFile("err.log")
+	logger.Error("this error log", map[string]interface{}{"data": "abc"})
 }
