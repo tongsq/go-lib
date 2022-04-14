@@ -3,9 +3,7 @@ package request
 import (
 	"encoding/json"
 	"net/http"
-	"net/url"
 	"strings"
-	"time"
 )
 
 /**
@@ -68,18 +66,5 @@ func post(requestUrl string, data string, header *HeaderDto, cookie map[string]s
 	req, _ := http.NewRequest("POST", requestUrl, strings.NewReader(data))
 	req = addHeader(req, header)
 	req = addCookie(req, cookie)
-	var client *http.Client
-	if proxy != nil {
-		proxyServer := getProxyUrl(proxy)
-		proxyUrl, _ := url.Parse(proxyServer)
-		client = &http.Client{
-			Transport: &http.Transport{Proxy: http.ProxyURL(proxyUrl)},
-			Timeout:   time.Second * 5,
-		}
-	} else {
-		client = &http.Client{
-			Timeout: time.Second * 5,
-		}
-	}
-	return request(client, req)
+	return request(req, proxy)
 }

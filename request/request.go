@@ -2,14 +2,25 @@ package request
 
 import (
 	"compress/gzip"
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"net/url"
+	"time"
 
+	"github.com/shadowsocks/shadowsocks-go/shadowsocks"
 	"github.com/tongsq/go-lib/ecode"
 	"github.com/tongsq/go-lib/util"
+	"h12.io/socks"
 )
+
+var timeout = time.Second * 5
+
+func SetTimeout(t time.Duration) {
+	timeout = t
+}
 
 /**
 format query params
@@ -25,7 +36,49 @@ func GetReqData(d map[string]string) string {
 /**
 http request
 */
-func request(client *http.Client, req *http.Request) (*HttpResultDto, error) {
+func request(req *http.Request, proxy *ProxyDto) (*HttpResultDto, error) {
+	var client *http.Client
+	var tran *http.Transport
+
+	if proxy != nil {
+		proxyServer := getProxyUrl(proxy)
+		switch proxy.Proto {
+		case PROTO_SS:
+			cipher, err := shadowsocks.NewCipher(proxy.User, proxy.Password)
+			if err != nil {
+				return nil, err
+			}
+			tran = &http.Transport{
+				Dial: func(_, addr string) (net.Conn, error) {
+					return shadowsocks.Dial(addr, fmt.Sprintf("%s:%s", proxy.Host, proxy.Port), cipher.Copy())
+				},
+			}
+		case PROTO_SOCKS4, PROTO_SOCKS4A:
+			dial := socks.Dial(proxyServer)
+			tran = &http.Transport{
+				Dial: dial,
+			}
+		default:
+			proxyUrl, err := url.Parse(proxyServer)
+			if err != nil {
+				return nil, err
+			}
+			tran = &http.Transport{
+				Proxy:           http.ProxyURL(proxyUrl),
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			}
+		}
+	}
+	if tran != nil {
+		client = &http.Client{
+			Transport: tran,
+			Timeout:   timeout,
+		}
+	} else {
+		client = &http.Client{
+			Timeout: timeout,
+		}
+	}
 	result := NewHttpResultDto()
 	resp, err := client.Do(req)
 	if err != nil {

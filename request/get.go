@@ -2,28 +2,14 @@ package request
 
 import (
 	"net/http"
-	"net/url"
-	"time"
 )
 
 func get(requestUrl string, header *HeaderDto, cookie map[string]string, proxy *ProxyDto) (*HttpResultDto, error) {
 	req, _ := http.NewRequest("GET", requestUrl, nil)
 	req = addHeader(req, header)
 	req = addCookie(req, cookie)
-	var client *http.Client
-	if proxy != nil {
-		proxyServer := getProxyUrl(proxy)
-		proxyUrl, _ := url.Parse(proxyServer)
-		client = &http.Client{
-			Transport: &http.Transport{Proxy: http.ProxyURL(proxyUrl)},
-			Timeout:   time.Second * 5,
-		}
-	} else {
-		client = &http.Client{
-			Timeout: time.Second * 5,
-		}
-	}
-	return request(client, req)
+
+	return request(req, proxy)
 }
 
 /**
