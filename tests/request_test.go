@@ -69,7 +69,7 @@ func TestSocks5Proxy(t *testing.T) {
 
 func TestSsProxy(t *testing.T) {
 	u := "https://api.ip.sb/ip"
-	data, err := request.WebGetProxy(u, nil, nil, &request.ProxyDto{Host: "127.0.0.1", Port: "1080", Proto: request.PROTP_SS, User: "chacha20", Password: "123"})
+	data, err := request.WebGetProxy(u, nil, nil, &request.ProxyDto{Host: "127.0.0.1", Port: "1080", Proto: request.PROTO_SS, User: "chacha20", Password: "123"})
 	if err != nil || data.HttpCode != request.HTTP_CODE_OK {
 		t.Fatal("test WebGetProxy fail", err, data.HttpCode)
 	} else {

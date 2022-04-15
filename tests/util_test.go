@@ -1,8 +1,11 @@
 package tests
 
 import (
-	"github.com/tongsq/go-lib/util"
+	"fmt"
 	"testing"
+
+	"github.com/tongsq/go-lib/logger"
+	"github.com/tongsq/go-lib/util"
 )
 
 func TestAdd(t *testing.T) {
@@ -27,4 +30,19 @@ func TestMin(t *testing.T) {
 	} else {
 		t.Fatal("test Min fail")
 	}
+}
+
+func printStackFunc() {
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println(err)
+			logger.PrintStack()
+		}
+	}()
+	var m map[string]struct{}
+	m["a"] = struct{}{}
+}
+
+func TestPrintStack(t *testing.T) {
+	printStackFunc()
 }
