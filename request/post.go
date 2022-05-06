@@ -6,65 +6,36 @@ import (
 	"strings"
 )
 
-/**
-post with cookies and headers
-*/
-func WebPost(requestUrl string, data map[string]string, header *HeaderDto, cookie map[string]string) (*HttpResultDto, error) {
-	return WebPostProxy(requestUrl, data, header, cookie, nil)
+// SimplePost Post
+func SimplePost(requestUrl string, data map[string]string) (*HttpResultDto, error) {
+	return Post(requestUrl, NewOptions().WithData(data))
 }
 
-/**
-post with cookies and headers
-*/
-func WebPostProxy(requestUrl string, data map[string]string, header *HeaderDto, cookie map[string]string, proxy *ProxyDto) (*HttpResultDto, error) {
-	if header == nil {
-		header = &HeaderDto{UserAgent: HTTP_USER_AGENT}
+// Post Post with options
+func Post(requestUrl string, options *Options) (*HttpResultDto, error) {
+	if options.Header == nil {
+		options.Header = &HeaderDto{UserAgent: HTTP_USER_AGENT}
 	}
-	if header.ContentType == "" {
-		header.ContentType = CONTENT_TYPE_FORM
+	var param string
+	if options.JsonData != nil || options.DataType == JSON {
+		if options.Header.ContentType == "" {
+			options.Header.ContentType = CONTENT_TYPE_JSON
+		}
+		var jsonData []byte
+		if options.JsonData != nil {
+			jsonData, _ = json.Marshal(options.JsonData)
+		} else if options.Data != nil {
+			jsonData, _ = json.Marshal(options.Data)
+		}
+		param = string(jsonData)
+	} else {
+		if options.Header.ContentType == "" {
+			options.Header.ContentType = CONTENT_TYPE_FORM
+		}
+		param = GetReqData(options.Data)
 	}
-	param := GetReqData(data)
-	return post(requestUrl, param, header, cookie, proxy)
-}
-
-/**
-post with cookies and headers
-*/
-func WebPostJson(requestUrl string, data map[string]string, header *HeaderDto, cookie map[string]string) (*HttpResultDto, error) {
-	return WebPostJsonProxy(requestUrl, data, header, cookie, nil)
-}
-
-/**
-post with cookies and headers
-*/
-func WebPostJsonProxy(requestUrl string, data map[string]string, header *HeaderDto, cookie map[string]string, proxy *ProxyDto) (*HttpResultDto, error) {
-	if header == nil {
-		header = &HeaderDto{UserAgent: HTTP_USER_AGENT}
-	}
-	if header.ContentType == "" {
-		header.ContentType = CONTENT_TYPE_JSON
-	}
-	jsonData, _ := json.Marshal(data)
-	return post(requestUrl, string(jsonData), header, cookie, proxy)
-}
-
-/**
-Simple post
-*/
-func Post(requestUrl string, data map[string]string) (*HttpResultDto, error) {
-	return WebPost(requestUrl, data, nil, map[string]string{})
-}
-
-/**
-Simple post use proxy
-*/
-func PostJson(requestUrl string, data map[string]string) (*HttpResultDto, error) {
-	return WebPostJson(requestUrl, data, nil, map[string]string{})
-}
-
-func post(requestUrl string, data string, header *HeaderDto, cookie map[string]string, proxy *ProxyDto) (*HttpResultDto, error) {
-	req, _ := http.NewRequest("POST", requestUrl, strings.NewReader(data))
-	req = addHeader(req, header)
-	req = addCookie(req, cookie)
-	return request(req, proxy)
+	req, _ := http.NewRequest("POST", requestUrl, strings.NewReader(param))
+	req = addHeader(req, options.Header)
+	req = addCookie(req, options.Cookie)
+	return request(req, options.Proxy, options.Timeout)
 }

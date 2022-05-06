@@ -16,10 +16,10 @@ import (
 	"h12.io/socks"
 )
 
-var timeout = time.Second * 5
+var DefaultTimeout = time.Second * 5
 
 func SetTimeout(t time.Duration) {
-	timeout = t
+	DefaultTimeout = t
 }
 
 /**
@@ -36,7 +36,7 @@ func GetReqData(d map[string]string) string {
 /**
 http request
 */
-func request(req *http.Request, proxy *ProxyDto) (*HttpResultDto, error) {
+func request(req *http.Request, proxy *ProxyDto, timeout time.Duration) (*HttpResultDto, error) {
 	var client *http.Client
 	var tran *http.Transport
 

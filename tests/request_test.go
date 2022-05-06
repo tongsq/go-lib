@@ -6,19 +6,26 @@ import (
 	"github.com/tongsq/go-lib/request"
 )
 
-func TestSimpleGet(t *testing.T) {
-	u := "https://www.baidu.com"
-	data, err := request.Get(u)
+func TestWebPostJson(t *testing.T) {
+	u := "https://httpbin.org/anything"
+	h := request.HeaderDto{
+		//UserAgent:               consts.USER_AGENT,
+		UpgradeInsecureRequests: "1",
+		Host:                    "example.com",
+		ContentType:             request.CONTENT_TYPE_JSON,
+	}
+	param := map[string]string{"name": "aa"}
+	data, err := request.Post(u, request.NewOptions().WithDataType(request.JSON).WithData(param).WithHeader(&h))
 	if err != nil || data.HttpCode != request.HTTP_CODE_OK {
-		t.Fatal("test get request fail", err)
+		t.Fatal("test post request fail", err)
 	} else {
-		t.Log("test get request success", err)
+		t.Log("test post request success", data.Body)
 	}
 }
 
 func TestSimplePost(t *testing.T) {
 	u := "https://www.baidu.com"
-	data, err := request.Post(u, nil)
+	data, err := request.SimplePost(u, nil)
 	if err != nil || data.HttpCode != request.HTTP_CODE_OK {
 		t.Fatal("test post request fail", err)
 	} else {
@@ -26,9 +33,9 @@ func TestSimplePost(t *testing.T) {
 	}
 }
 
-func TestWebGetProxy(t *testing.T) {
-	u := "https://api.ip.sb/ip"
-	data, err := request.WebGetProxy(u, nil, nil, &request.ProxyDto{Host: "127.0.0.1", Port: "9999"})
+func TestSocks4Proxy(t *testing.T) {
+	u := "https://httpbin.org/anything"
+	data, err := request.Get(u, request.NewOptions().WithProxy(&request.ProxyDto{Host: "218.75.69.50", Port: "56430", Proto: request.PROTO_SOCKS4}))
 	if err != nil || data.HttpCode != request.HTTP_CODE_OK {
 		t.Fatal("test WebGetProxy fail", err)
 	} else {
@@ -36,32 +43,11 @@ func TestWebGetProxy(t *testing.T) {
 	}
 }
 
-func TestWebGet(t *testing.T) {
-	u := "https://api.ip.sb/ip"
-	data, err := request.WebGet(u, &request.HeaderDto{UserAgent: request.HTTP_USER_AGENT, Referer: "abc"}, map[string]string{"session": "abc"})
-	if err != nil || data.HttpCode != request.HTTP_CODE_OK {
-		t.Fatal("test WebGet fail", err)
-	} else {
-		t.Log("test WebGet success: ", data.Body)
-	}
-}
-
-func TestSocks4Proxy(t *testing.T) {
-	u := "https://tool.lu/ip/"
-	data, err := request.WebGetProxy(u, nil, nil, &request.ProxyDto{Host: "42.236.253.234", Port: "1080", Proto: request.PROTO_SOCKS4})
-	if err != nil || data.HttpCode != request.HTTP_CODE_OK {
-		t.Fatal("test WebGetProxy fail", err, data.HttpCode)
-	} else {
-		//body,_ := util.GbkToUtf8(data.Body)
-		t.Log("test WebGetProxy success: ", data.Body)
-	}
-}
-
 func TestSocks5Proxy(t *testing.T) {
-	u := "https://api.ip.sb/ip"
-	data, err := request.WebGetProxy(u, nil, nil, &request.ProxyDto{Host: "127.0.0.1", Port: "9988", Proto: request.PROTO_SOCKS5, User: "root", Password: "123"})
+	u := "https://httpbin.org/anything"
+	data, err := request.Get(u, request.NewOptions().WithProxy(&request.ProxyDto{Host: "38.142.63.146", Port: "31596", Proto: request.PROTO_SOCKS5}))
 	if err != nil || data.HttpCode != request.HTTP_CODE_OK {
-		t.Fatal("test WebGetProxy fail", err, data.HttpCode)
+		t.Fatal("test WebGetProxy fail", err)
 	} else {
 		t.Log("test WebGetProxy success: ", data.Body)
 	}
@@ -69,9 +55,9 @@ func TestSocks5Proxy(t *testing.T) {
 
 func TestSsProxy(t *testing.T) {
 	u := "https://api.ip.sb/ip"
-	data, err := request.WebGetProxy(u, nil, nil, &request.ProxyDto{Host: "127.0.0.1", Port: "1080", Proto: request.PROTO_SS, User: "chacha20", Password: "123"})
+	data, err := request.Get(u, request.NewOptions().WithProxy(&request.ProxyDto{Host: "127.0.0.1", Port: "1080", Proto: request.PROTO_SS, User: "chacha20", Password: "123"}))
 	if err != nil || data.HttpCode != request.HTTP_CODE_OK {
-		t.Fatal("test WebGetProxy fail", err, data.HttpCode)
+		t.Fatal("test WebGetProxy fail", err)
 	} else {
 		t.Log("test WebGetProxy success: ", data.Body)
 	}
