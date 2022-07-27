@@ -35,6 +35,13 @@ func Post(requestUrl string, options *Options) (*HttpResultDto, error) {
 		param = GetReqData(options.Data)
 	}
 	req, _ := http.NewRequest("POST", requestUrl, strings.NewReader(param))
+	if options.Query != nil {
+		q := req.URL.Query()
+		for k, v := range options.Query {
+			q.Add(k, v)
+		}
+		req.URL.RawQuery = q.Encode()
+	}
 	req = addHeader(req, options.Header)
 	req = addCookie(req, options.Cookie)
 	return request(req, options.Proxy, options.Timeout)

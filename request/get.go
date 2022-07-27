@@ -24,5 +24,12 @@ func Get(requestUrl string, options *Options) (*HttpResultDto, error) {
 		}
 		req.URL.RawQuery = q.Encode()
 	}
+	if options.Query != nil {
+		q := req.URL.Query()
+		for k, v := range options.Query {
+			q.Add(k, v)
+		}
+		req.URL.RawQuery = q.Encode()
+	}
 	return request(req, options.Proxy, options.Timeout)
 }

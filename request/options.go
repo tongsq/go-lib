@@ -14,6 +14,7 @@ type Options struct {
 	Proxy    *ProxyDto
 	Timeout  time.Duration
 	Data     map[string]string
+	Query    map[string]string
 	JsonData interface{}
 	DataType DataType
 }
@@ -47,6 +48,11 @@ func (o *Options) WithJsonData(data interface{}) *Options {
 
 func (o *Options) WithData(data map[string]string) *Options {
 	o.Data = data
+	return o
+}
+
+func (o *Options) WithQuery(query map[string]string) *Options {
+	o.Query = query
 	return o
 }
 

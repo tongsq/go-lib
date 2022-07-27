@@ -15,7 +15,8 @@ func TestWebPostJson(t *testing.T) {
 		ContentType:             request.CONTENT_TYPE_JSON,
 	}
 	param := map[string]string{"name": "aa"}
-	data, err := request.Post(u, request.NewOptions().WithDataType(request.JSON).WithData(param).WithHeader(&h))
+	query := map[string]string{"key": "areqfdq456", "va": "feq"}
+	data, err := request.Post(u, request.NewOptions().WithDataType(request.JSON).WithData(param).WithHeader(&h).WithQuery(query))
 	if err != nil || data.HttpCode != request.HTTP_CODE_OK {
 		t.Fatal("test post request fail", err)
 	} else {

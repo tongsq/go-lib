@@ -25,7 +25,8 @@ func TestGetRequest(t *testing.T) {
 		Host:                    "example.com",
 		ContentType:             request.CONTENT_TYPE_JSON,
 	}
-	data, err := request.Get(u, request.NewOptions().WithHeader(&h).WithCookie(map[string]string{"ck": "cookie demo"}).WithData(map[string]string{"k2": "v2"}))
+	query := map[string]string{"query": "abce"}
+	data, err := request.Get(u, request.NewOptions().WithHeader(&h).WithCookie(map[string]string{"ck": "cookie demo"}).WithData(map[string]string{"k2": "v2"}).WithQuery(query))
 	fmt.Printf("%#v\n", data)
 	if err != nil || data.HttpCode != request.HTTP_CODE_OK {
 		t.Fatal("test get request fail", err)
